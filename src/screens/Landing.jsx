@@ -17,24 +17,28 @@ const css = {
   tag: { fontFamily: "'JetBrains Mono',monospace", fontSize: 9, letterSpacing: 5, textTransform: 'uppercase', color: 'var(--dim)', marginTop: 10, marginBottom: 40, animation: 'fadeIn 1s ease 0.3s both' },
   card: { width: '100%', background: 'var(--s1)', border: '1px solid var(--b1)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 0 0 1px rgba(255,255,255,0.02),0 40px 80px rgba(0,0,0,0.7)', animation: 'cardIn 0.6s cubic-bezier(0.22,1,0.36,1) 0.1s both' },
   tabs: { display: 'flex', borderBottom: '1px solid var(--b1)' },
-  tab: (on) => ({ flex: 1, padding: 14, fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: on ? 'var(--text)' : 'var(--dim)', cursor: 'pointer', textAlign: 'center', borderBottom: on ? '2px solid var(--accent)' : '2px solid transparent', transition: 'all 0.2s' }),
+  tab: (on) => ({ flex: 1, padding: 13, fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: on ? 'var(--text)' : 'var(--dim)', cursor: 'pointer', textAlign: 'center', borderBottom: on ? '2px solid var(--accent)' : '2px solid transparent', transition: 'all 0.2s' }),
   body: { padding: 24 },
   label: { fontFamily: "'JetBrains Mono',monospace", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--dim)', marginBottom: 7, display: 'block' },
   input: { width: '100%', background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 10, padding: '12px 14px', fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 14, color: 'var(--text)', outline: 'none', marginBottom: 14, transition: 'border-color 0.2s', userSelect: 'text', WebkitUserSelect: 'text' },
   err: { fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#886655', letterSpacing: 0.5, minHeight: 18, marginBottom: 6 },
+  ok: { fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: '#4a4', letterSpacing: 0.5, minHeight: 18, marginBottom: 6 },
   btn: (disabled) => ({ width: '100%', padding: 13, background: disabled ? 'var(--b1)' : 'var(--accent)', color: disabled ? 'var(--dim)' : 'var(--bg)', border: 'none', borderRadius: 10, fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 13, fontWeight: 700, cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s', marginTop: 2, opacity: disabled ? 0.4 : 1 }),
   hint: { fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--dimmer)', letterSpacing: 1, textAlign: 'center', marginTop: 12, lineHeight: 1.7 },
+  skip: { fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--dim)', letterSpacing: 1, textAlign: 'center', marginTop: 10, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 },
 }
 
 function Field({ label, type = 'text', placeholder, value, onChange }) {
   return (<><label style={css.label}>{label}</label><input style={css.input} type={type} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} autoComplete="off" /></>)
 }
 
+// ── REGISTER ──
 function Register({ uid, onDone }) {
-  const [name, setName] = useState('')
+  const [name, setName]   = useState('')
   const [uname, setUname] = useState('')
-  const [pass, setPass] = useState('')
-  const [err, setErr] = useState('')
+  const [pass, setPass]   = useState('')
+  const [email, setEmail] = useState('')
+  const [err, setErr]     = useState('')
   const [loading, setLoading] = useState(false)
 
   async function submit() {
@@ -42,13 +46,16 @@ function Register({ uid, onDone }) {
     if (uname.trim().length < 3) return setErr('↳ username min 3 chars')
     if (!/^[a-z0-9_]+$/.test(uname.trim().toLowerCase())) return setErr('↳ letters, numbers, underscore only')
     if (pass.length < 6) return setErr('↳ password min 6 chars')
+    if (email && !/\S+@\S+\.\S+/.test(email)) return setErr('↳ invalid email format')
     setErr(''); setLoading(true)
     try {
       const u = uname.trim().toLowerCase()
       const snap = await get(ref(db, 'users/' + u))
       if (snap.exists()) return setErr('↳ username taken')
       const passHash = await hashStr(pass + u)
-      await set(ref(db, 'users/' + u), { name: name.trim(), passHash, uid, createdAt: Date.now() })
+      const userData = { name: name.trim(), passHash, uid, createdAt: Date.now() }
+      if (email.trim()) userData.email = email.trim().toLowerCase()
+      await set(ref(db, 'users/' + u), userData)
       onDone({ myName: name.trim(), username: u })
     } catch (e) { setErr('↳ ' + e.message) }
     finally { setLoading(false) }
@@ -56,25 +63,28 @@ function Register({ uid, onDone }) {
 
   return (
     <>
-      <Field label="Your name" placeholder="Dein Name" value={name} onChange={setName} />
-      <Field label="Username" placeholder="Benutzername" value={uname} onChange={setUname} />
-      <Field label="Password" type="password" placeholder="Passwort" value={pass} onChange={setPass} />
+      <Field label="Dein Name" placeholder="Dein Name" value={name} onChange={setName} />
+      <Field label="Benutzername" placeholder="Benutzername" value={uname} onChange={setUname} />
+      <Field label="Passwort" type="password" placeholder="Passwort" value={pass} onChange={setPass} />
+      <label style={css.label}>Recovery Email <span style={{ color: 'var(--dimmer)', fontSize: 8 }}>(optional)</span></label>
+      <input style={css.input} type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" />
       <div style={css.err}>{err}</div>
       <button style={css.btn(loading)} disabled={loading} onClick={submit}>{loading ? 'Creating...' : 'Create account →'}</button>
-      <div style={css.hint}>Benutzername is how others find and message you</div>
+      <div style={css.hint}>recovery email lets you reset your password if forgotten</div>
     </>
   )
 }
 
-function SignIn({ uid, onDone }) {
+// ── SIGN IN ──
+function SignIn({ uid, onDone, onForgot }) {
   const [uname, setUname] = useState('')
-  const [pass, setPass] = useState('')
-  const [err, setErr] = useState('')
+  const [pass, setPass]   = useState('')
+  const [err, setErr]     = useState('')
   const [loading, setLoading] = useState(false)
 
   async function submit() {
-    if (!uname.trim()) return setErr('↳ username required')
-    if (!pass) return setErr('↳ password required')
+    if (!uname.trim()) return setErr('↳ Benutzername required')
+    if (!pass) return setErr('↳ Passwort required')
     setErr(''); setLoading(true)
     try {
       const u = uname.trim().toLowerCase()
@@ -91,19 +101,94 @@ function SignIn({ uid, onDone }) {
 
   return (
     <>
-      <Field label="Username" placeholder="Benutzername" value={uname} onChange={setUname} />
-      <Field label="Password" type="password" placeholder="Passwort" value={pass} onChange={setPass} />
+      <Field label="Benutzername" placeholder="Benutzername" value={uname} onChange={setUname} />
+      <Field label="Passwort" type="password" placeholder="Passwort" value={pass} onChange={setPass} />
       <div style={css.err}>{err}</div>
       <button style={css.btn(loading)} disabled={loading} onClick={submit}>{loading ? 'Signing in...' : 'Sign in →'}</button>
+      <div style={css.skip} onClick={onForgot}>forgot password?</div>
     </>
   )
 }
 
+// ── FORGOT PASSWORD ──
+function ForgotPassword({ onBack }) {
+  const [uname, setUname]     = useState('')
+  const [email, setEmail]     = useState('')
+  const [newPass, setNewPass] = useState('')
+  const [step, setStep]       = useState(1) // 1 = enter details, 2 = set new password
+  const [err, setErr]         = useState('')
+  const [ok, setOk]           = useState('')
+  const [loading, setLoading] = useState(false)
+  const [verified, setVerified] = useState(null) // stores user data after verify
+
+  async function verify() {
+    if (!uname.trim()) return setErr('↳ username required')
+    if (!email.trim()) return setErr('↳ email required')
+    setErr(''); setLoading(true)
+    try {
+      const u = uname.trim().toLowerCase()
+      const snap = await get(ref(db, 'users/' + u))
+      if (!snap.exists()) return setErr('↳ username not found')
+      const data = snap.val()
+      if (!data.email) return setErr('↳ no recovery email set for this account')
+      if (data.email !== email.trim().toLowerCase()) return setErr('↳ email does not match')
+      // Verified — allow reset
+      setVerified({ username: u, data })
+      setStep(2)
+      setOk('↳ email matched — set your new password')
+    } catch (e) { setErr('↳ ' + e.message) }
+    finally { setLoading(false) }
+  }
+
+  async function resetPassword() {
+    if (newPass.length < 6) return setErr('↳ password min 6 chars')
+    setErr(''); setLoading(true)
+    try {
+      const u = verified.username
+      const passHash = await hashStr(newPass + u)
+      await update(ref(db, 'users/' + u), { passHash })
+      setOk('↳ password updated! sign in now')
+      setTimeout(() => onBack(), 2000)
+    } catch (e) { setErr('↳ ' + e.message) }
+    finally { setLoading(false) }
+  }
+
+  return (
+    <>
+      <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--dim)', letterSpacing: 1, marginBottom: 18, lineHeight: 1.8 }}>
+        enter your username and recovery email — if they match we'll let you set a new password
+      </div>
+
+      {step === 1 && (
+        <>
+          <Field label="Benutzername" placeholder="Benutzername" value={uname} onChange={setUname} />
+          <Field label="Recovery Email" type="email" placeholder="your@email.com" value={email} onChange={setEmail} />
+          <div style={css.err}>{err}</div>
+          <button style={css.btn(loading)} disabled={loading} onClick={verify}>{loading ? 'Verifying...' : 'Verify →'}</button>
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <div style={css.ok}>{ok}</div>
+          <Field label="New Password" type="password" placeholder="Passwort" value={newPass} onChange={setNewPass} />
+          <div style={css.err}>{err}</div>
+          <button style={css.btn(loading)} disabled={loading} onClick={resetPassword}>{loading ? 'Updating...' : 'Set new password →'}</button>
+        </>
+      )}
+
+      <div style={css.skip} onClick={onBack}>← back to sign in</div>
+    </>
+  )
+}
+
+// ── MAIN ──
 const TABS = ['register', 'signin']
 const LABELS = { register: 'New account', signin: 'Sign in' }
 
 export default function Landing({ uid, onSignIn }) {
-  const [tab, setTab] = useState('register')
+  const [tab, setTab]       = useState('register')
+  const [forgot, setForgot] = useState(false)
 
   function handleDone(session) {
     localStorage.setItem('_thread_session', JSON.stringify(session))
@@ -118,12 +203,23 @@ export default function Landing({ uid, onSignIn }) {
         <div style={css.logo}>thread<span style={css.dot} /></div>
         <div style={css.tag}>private · search · unlimited chats</div>
         <div style={css.card}>
-          <div style={css.tabs}>
-            {TABS.map(t => <div key={t} style={css.tab(tab === t)} onClick={() => setTab(t)}>{LABELS[t]}</div>)}
-          </div>
+          {!forgot && (
+            <div style={css.tabs}>
+              {TABS.map(t => <div key={t} style={css.tab(tab === t)} onClick={() => setTab(t)}>{LABELS[t]}</div>)}
+            </div>
+          )}
+          {forgot && (
+            <div style={{ padding: '14px 24px', borderBottom: '1px solid var(--b1)', fontFamily: "'JetBrains Mono',monospace", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--dim)' }}>
+              Reset Password
+            </div>
+          )}
           <div style={css.body}>
-            {tab === 'register' && <Register uid={uid} onDone={handleDone} />}
-            {tab === 'signin'   && <SignIn   uid={uid} onDone={handleDone} />}
+            {forgot
+              ? <ForgotPassword onBack={() => setForgot(false)} />
+              : tab === 'register'
+                ? <Register uid={uid} onDone={handleDone} />
+                : <SignIn uid={uid} onDone={handleDone} onForgot={() => setForgot(true)} />
+            }
           </div>
         </div>
       </div>
