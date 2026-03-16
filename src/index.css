@@ -149,3 +149,31 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   background-size: 200% auto;
   animation: shimmer 1.5s linear infinite;
 }
+
+/* Animated pfp ring */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes ringPulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+
+/* Spinning ring for animated pfp */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Breathe for online dot */
+@keyframes breathe {
+  0%,100% { box-shadow: 0 0 0 0 rgba(68,170,68,0.5); }
+  50%      { box-shadow: 0 0 0 4px rgba(68,170,68,0); }
+}
+
+/* Animated pfp ring */
+@keyframes ringRotate {
+  from { background-position: 0% 50%; }
+  to   { background-position: 200% 50%; }
+}

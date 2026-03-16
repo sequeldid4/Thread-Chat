@@ -11,7 +11,7 @@ window.addEventListener('resize', setVH)
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/Thread-Chat/sw.js')
+    navigator.serviceWorker.register('/ThreadChat/sw.js')
       .catch(() => {})
   })
 }

@@ -86,7 +86,7 @@ export default function Chat({ activeChat, session, uid, prefs, setPref, onSideb
     stopTyping()
     const now = new Date()
     const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    const payload = { senderUid: uid, senderName: session.myName, text, time, ts: Date.now(), seen: false }
+    const payload = { senderUid: uid, senderName: session.myName, senderUsername: session.username, text, time, ts: Date.now(), seen: false }
     if (replyTo) payload.replyTo = { fbKey: replyTo.id, text: replyTo.text || '', senderName: replyTo.senderName }
     setReplyTo(null)
     await push(ref(db, `chats/${chatId}/msgs`), payload)
@@ -138,6 +138,8 @@ export default function Chat({ activeChat, session, uid, prefs, setPref, onSideb
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', background: 'var(--bg)' }}>
       <TopBar
         peerName={peerName}
+        peerUsername={peerUsername}
+        peerUsername={peerUsername}
         peerOnline={peerOnline}
         onSidebarOpen={onSidebarOpen}
         onInvite={() => setShowInvite(true)}
