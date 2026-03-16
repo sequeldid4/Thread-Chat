@@ -9,5 +9,5 @@ self.addEventListener('push', event => {
 })
 self.addEventListener('notificationclick', event => {
   event.notification.close()
-  event.waitUntil(clients.openWindow('/ThreadChatV2/'))
+  event.waitUntil(clients.openWindow('/Thread-Chat/'))
 })
