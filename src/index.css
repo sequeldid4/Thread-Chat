@@ -28,10 +28,124 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--b1); border-radius: 2px; }
 
-@keyframes logoIn { from{opacity:0;filter:blur(10px);transform:scale(1.05)} to{opacity:1;filter:blur(0);transform:scale(1)} }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-@keyframes cardIn { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-@keyframes bPop   { from{opacity:0;transform:scale(0.9) translateY(5px)} to{opacity:1;transform:scale(1) translateY(0)} }
-@keyframes popIn  { from{opacity:0;transform:scale(0.9) translateY(-8px)} to{opacity:1;transform:scale(1) translateY(0)} }
-@keyframes tdot   { 0%,60%,100%{opacity:.2;transform:scale(.7)} 30%{opacity:1;transform:scale(1)} }
-@keyframes slideIn { from{transform:translateX(-100%)} to{transform:translateX(0)} }
+/* ── CORE ANIMATIONS ── */
+@keyframes logoIn {
+  0%   { opacity:0; filter:blur(20px); transform:scale(1.1) translateY(-10px); }
+  60%  { filter:blur(2px); }
+  100% { opacity:1; filter:blur(0); transform:scale(1) translateY(0); }
+}
+@keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+@keyframes fadeUp    { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeDown  { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes cardIn    { from{opacity:0;transform:translateY(32px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes slideIn   { from{transform:translateX(-100%)} to{transform:translateX(0)} }
+@keyframes slideInR  { from{transform:translateX(40px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+/* Message bubble pop — bouncy */
+@keyframes bPop {
+  0%   { opacity:0; transform:scale(0.85) translateY(8px); }
+  60%  { transform:scale(1.03) translateY(-2px); }
+  100% { opacity:1; transform:scale(1) translateY(0); }
+}
+/* Sent bubble slides from right */
+@keyframes bPopYou {
+  0%   { opacity:0; transform:scale(0.88) translateX(12px); }
+  60%  { transform:scale(1.02) translateX(-2px); }
+  100% { opacity:1; transform:scale(1) translateX(0); }
+}
+/* Received bubble slides from left */
+@keyframes bPopThem {
+  0%   { opacity:0; transform:scale(0.88) translateX(-12px); }
+  60%  { transform:scale(1.02) translateX(2px); }
+  100% { opacity:1; transform:scale(1) translateX(0); }
+}
+
+@keyframes popIn {
+  0%   { opacity:0; transform:scale(0.88) translateY(-10px); }
+  70%  { transform:scale(1.03) translateY(1px); }
+  100% { opacity:1; transform:scale(1) translateY(0); }
+}
+@keyframes tdot {
+  0%,60%,100% { opacity:.2; transform:scale(.7); }
+  30%          { opacity:1;  transform:scale(1); }
+}
+
+/* Reaction burst */
+@keyframes rxnPop {
+  0%   { transform:scale(0); opacity:0; }
+  60%  { transform:scale(1.2); }
+  100% { transform:scale(1); opacity:1; }
+}
+
+/* Notification badge pulse */
+@keyframes pulse {
+  0%,100% { transform:scale(1); }
+  50%      { transform:scale(1.15); }
+}
+
+/* Shimmer for loading states */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* Online dot breathe */
+@keyframes breathe {
+  0%,100% { box-shadow: 0 0 0 0 rgba(68,170,68,0.4); }
+  50%      { box-shadow: 0 0 0 4px rgba(68,170,68,0); }
+}
+
+/* Sidebar item hover slide */
+@keyframes rowIn {
+  from { opacity:0; transform:translateX(-8px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+/* Input focus ring */
+@keyframes ringIn {
+  from { box-shadow: 0 0 0 0 var(--accent-dim); }
+  to   { box-shadow: 0 0 0 3px var(--accent-dim); }
+}
+
+/* Screen transition */
+@keyframes screenIn {
+  from { opacity:0; transform:translateX(16px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+/* ── UTILITY CLASSES ── */
+.anim-fadein   { animation: fadeIn  0.3s ease both; }
+.anim-fadeup   { animation: fadeUp  0.4s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-cardin   { animation: cardIn  0.5s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-slidein  { animation: slideIn 0.25s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-popin    { animation: popIn   0.22s cubic-bezier(0.34,1.56,0.64,1) both; }
+.anim-screenin { animation: screenIn 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms;  }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms;}
+.stagger > *:nth-child(4) { animation-delay: 150ms;}
+.stagger > *:nth-child(5) { animation-delay: 200ms;}
+
+/* Online dot animation */
+.dot-online {
+  animation: breathe 2s ease-in-out infinite;
+}
+
+/* Reaction animation */
+.rxn-new {
+  animation: rxnPop 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* Notification badge pulse */
+.badge-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Shimmer skeleton */
+.shimmer {
+  background: linear-gradient(90deg, var(--s2) 25%, var(--s3) 50%, var(--s2) 75%);
+  background-size: 200% auto;
+  animation: shimmer 1.5s linear infinite;
+}

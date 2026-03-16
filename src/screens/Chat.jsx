@@ -196,7 +196,7 @@ export default function Chat({ activeChat, session, uid, prefs, setPref, onSideb
           <img src={lightbox} style={{ maxWidth: '92vw', maxHeight: '92vh', borderRadius: 12 }} alt="" onClick={e => e.stopPropagation()} />
         </div>
       )}
-      {showSettings && <Settings prefs={prefs} setPref={setPref} onClose={() => setShowSettings(false)} username={session.username} />}
+      {showSettings && <Settings prefs={prefs} setPref={setPref} onClose={() => setShowSettings(false)} />}
       {showMenu && <Menu onInvite={() => { setShowInvite(true); setShowMenu(false) }} onSettings={() => { setShowSettings(true); setShowMenu(false) }} onClear={() => { clearAll(); setShowMenu(false) }} onClose={() => setShowMenu(false)} />}
       {showInvite && <Invite token={inviteToken} onBack={() => setShowInvite(false)} />}
     </div>
