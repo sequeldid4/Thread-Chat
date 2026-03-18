@@ -139,7 +139,6 @@ export default function Chat({ activeChat, session, uid, prefs, setPref, onSideb
       <TopBar
         peerName={peerName}
         peerUsername={peerUsername}
-        peerUsername={peerUsername}
         peerOnline={peerOnline}
         onSidebarOpen={onSidebarOpen}
         onInvite={() => setShowInvite(true)}
