@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { ref, push, update, remove, set, get } from 'firebase/database'
-import { db, storage } from '../firebase'
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
+import { db } from '../firebase'
+
 import { useMessages } from '../hooks/useMessages'
 import { usePresence } from '../hooks/usePresence'
 import { useTyping } from '../hooks/useTyping'
