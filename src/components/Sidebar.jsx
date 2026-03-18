@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 import { Avatar, UploadableAvatar } from './Avatar'
 import { ref, get, set, update } from 'firebase/database'
 import { db } from '../firebase'
-import Avatar from './Avatar'
-import PfpUploader from './PfpUploader'
 
 function rnd(n = 10) { return Math.random().toString(36).slice(2, 2 + n) }
 
