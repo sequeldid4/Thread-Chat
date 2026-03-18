@@ -5,28 +5,6 @@ import { db } from '../firebase'
 
 function rnd(n = 10) { return Math.random().toString(36).slice(2, 2 + n) }
 
-function Avatar({ name, size = 42, online = false }) {
-  return (
-    <div style={{ position: 'relative', flexShrink: 0 }}>
-      <div style={{
-        width: size, height: size, borderRadius: size * 0.28,
-        background: 'var(--s3)', border: '1px solid var(--b1)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: size * 0.38, fontWeight: 700, textTransform: 'uppercase',
-        color: 'var(--accent)', transition: 'transform 0.2s, border-color 0.2s',
-      }}>
-        {name?.[0] || '?'}
-      </div>
-      {online && (
-        <div className="dot-online" style={{
-          position: 'absolute', bottom: -1, right: -1,
-          width: 10, height: 10, borderRadius: '50%',
-          background: '#4a4', border: '2px solid var(--s1)',
-        }} />
-      )}
-    </div>
-  )
-}
 
 function ChatRow({ chat, active, onClick, index }) {
   return (
