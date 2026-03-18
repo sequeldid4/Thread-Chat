@@ -177,3 +177,8 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   from { background-position: 0% 50%; }
   to   { background-position: 200% 50%; }
 }
+
+@keyframes ringRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
