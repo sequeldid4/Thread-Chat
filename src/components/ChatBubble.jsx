@@ -1,5 +1,4 @@
 import React, { useRef } from 'react'
-import { Avatar } from './Avatar'
 
 export default function ChatBubble({ msg, isYou, showAvatar, showName, onReply, onReact, onDelete, onImageClick }) {
   const pressTimer = useRef(null)
@@ -43,8 +42,16 @@ export default function ChatBubble({ msg, isYou, showAvatar, showName, onReply, 
     <div style={{ display: 'flex', justifyContent: isYou ? 'flex-end' : 'flex-start', zIndex: 1, position: 'relative' }}>
       {/* Avatar */}
       {!isYou && (
-        <div style={{ visibility: showAvatar ? 'visible' : 'hidden', marginRight: 8, alignSelf: 'flex-end', marginBottom: 1 }}>
-          <Avatar username={msg.senderUsername} name={msg.senderName} size={30} />
+        <div style={{
+          width: 30, height: 30, borderRadius: 9,
+          background: 'var(--s3)', border: '1px solid var(--b1)',
+          fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, marginRight: 8, alignSelf: 'flex-end', marginBottom: 1,
+          visibility: showAvatar ? 'visible' : 'hidden',
+          transition: 'transform 0.2s',
+        }}>
+          {msg.senderName?.[0]?.toUpperCase() || '?'}
         </div>
       )}
 

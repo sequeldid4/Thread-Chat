@@ -1,9 +1,31 @@
 import React, { useState } from 'react'
-import { Avatar, UploadableAvatar } from './Avatar'
 import { ref, get, set, update } from 'firebase/database'
 import { db } from '../firebase'
 
 function rnd(n = 10) { return Math.random().toString(36).slice(2, 2 + n) }
+
+function Avatar({ name, size = 42, online = false }) {
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <div style={{
+        width: size, height: size, borderRadius: size * 0.28,
+        background: 'var(--s3)', border: '1px solid var(--b1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: size * 0.38, fontWeight: 700, textTransform: 'uppercase',
+        color: 'var(--accent)', transition: 'transform 0.2s, border-color 0.2s',
+      }}>
+        {name?.[0] || '?'}
+      </div>
+      {online && (
+        <div className="dot-online" style={{
+          position: 'absolute', bottom: -1, right: -1,
+          width: 10, height: 10, borderRadius: '50%',
+          background: '#4a4', border: '2px solid var(--s1)',
+        }} />
+      )}
+    </div>
+  )
+}
 
 function ChatRow({ chat, active, onClick, index }) {
   return (
@@ -18,7 +40,7 @@ function ChatRow({ chat, active, onClick, index }) {
     onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--s1)' }}
     onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
     >
-      <Avatar username={chat.peerUsername} name={chat.peerName} size={44} />
+      <Avatar name={chat.peerName} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3 }}>
           <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chat.peerName}</div>
@@ -42,7 +64,7 @@ function RequestRow({ req, myUsername, onAccept, onDecline }) {
   return (
     <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--b1)', background: 'var(--s1)', animation: 'fadeUp 0.3s ease both' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-        <Avatar username={req.from} name={req.name} size={34} />
+        <Avatar name={req.name} size={34} />
         <div>
           <div style={{ fontSize: 13, fontWeight: 600 }}>{req.name}</div>
           <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--dim)' }}>@{req.from}</div>
@@ -50,8 +72,8 @@ function RequestRow({ req, myUsername, onAccept, onDecline }) {
       </div>
       {req.message && <div style={{ fontSize: 12, color: 'var(--dim)', marginBottom: 10, paddingLeft: 2 }}>"{req.message}"</div>}
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={async () => { setAccepting(true); await onAccept(req) }}
-          style={{ flex: 1, padding: '7px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'transform 0.15s', opacity: accepting ? 0.6 : 1 }}
+        <button onClick={async () => { setAccepting(true); await onAccept(req); }}
+          style={{ flex: 1, padding: '7px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'transform 0.15s, opacity 0.15s', opacity: accepting ? 0.6 : 1 }}
           onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
           {accepting ? '...' : 'Accept'}
@@ -68,13 +90,11 @@ function RequestRow({ req, myUsername, onAccept, onDecline }) {
 }
 
 export default function Sidebar({ session, chats, requests, activeChatId, onSelectChat, onSignOut, isMobile, onClose }) {
-  const [search, setSearch]             = useState('')
+  const [search, setSearch]           = useState('')
   const [searchResult, setSearchResult] = useState(null)
-  const [reqMsg, setReqMsg]             = useState('')
-  const [sending, setSending]           = useState(false)
-  const [tab, setTab]                   = useState('chats')
-  const [showPfpUploader, setShowPfpUploader] = useState(false)
-  const [myPfp, setMyPfp]               = useState(null)
+  const [reqMsg, setReqMsg]           = useState('')
+  const [sending, setSending]         = useState(false)
+  const [tab, setTab]                 = useState('chats')
 
   async function doSearch() {
     const q = search.trim().toLowerCase()
@@ -117,10 +137,17 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
     await update(ref(db, `requests/${session.username}/${req.from}`), { status: 'declined' })
   }
 
+  const inputStyle = {
+    flex: 1, background: 'none', border: 'none', outline: 'none',
+    fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 13, color: 'var(--text)',
+    transition: 'color 0.15s',
+  }
+
   return (
     <div style={{
-      width: isMobile ? '100%' : 300, height: '100%',
-      background: 'var(--s1)', borderRight: '1px solid var(--b1)',
+      width: isMobile ? '100%' : 300,
+      height: '100%', background: 'var(--s1)',
+      borderRight: '1px solid var(--b1)',
       display: 'flex', flexDirection: 'column', flexShrink: 0,
       ...(isMobile ? { position: 'fixed', inset: 0, zIndex: 50, animation: 'slideIn 0.25s cubic-bezier(0.22,1,0.36,1)' } : { animation: 'fadeIn 0.3s ease' }),
     }}>
@@ -132,33 +159,42 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
         </div>
         <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--dim)', letterSpacing: 1, animation: 'fadeIn 0.5s ease 0.2s both' }}>@{session.username}</div>
         {isMobile && (
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--dim)', fontSize: 20, cursor: 'pointer', padding: 4, transition: 'color 0.15s, transform 0.2s' }}
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--dim)', fontSize: 20, cursor: 'pointer', padding: 4, transition: 'color 0.15s, transform 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.transform = 'rotate(90deg)' }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--dim)'; e.currentTarget.style.transform = 'rotate(0)' }}>×</button>
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--dim)'; e.currentTarget.style.transform = 'rotate(0)' }}>
+            ×
+          </button>
         )}
       </div>
 
       {/* Search */}
       <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--b1)' }}>
-        <div style={{ display: 'flex', gap: 8, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 10, padding: '8px 12px', alignItems: 'center', transition: 'border-color 0.2s, box-shadow 0.2s' }}>
+        <div style={{ display: 'flex', gap: 8, background: 'var(--s2)', border: '1px solid var(--b1)', borderRadius: 10, padding: '8px 12px', alignItems: 'center', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+          onFocus={e => { e.currentTarget.style.borderColor = 'var(--b2)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-dim)' }}
+          onBlur={e => { e.currentTarget.style.borderColor = 'var(--b1)'; e.currentTarget.style.boxShadow = 'none' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
           <input value={search} onChange={e => { setSearch(e.target.value); setSearchResult(null) }}
             onKeyDown={e => e.key === 'Enter' && doSearch()}
-            placeholder="Search by username..."
-            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 13, color: 'var(--text)' }} />
+            placeholder="Search by username..." style={inputStyle} />
           {search && (
             <button onClick={doSearch} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 11, cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace", letterSpacing: 0.5, flexShrink: 0, transition: 'transform 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>go</button>
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+              go
+            </button>
           )}
         </div>
-        {searchResult === 'loading' && <div className="shimmer" style={{ height: 60, borderRadius: 10, marginTop: 10 }} />}
+
+        {/* Search result */}
+        {searchResult === 'loading' && (
+          <div className="shimmer" style={{ height: 60, borderRadius: 10, marginTop: 10 }} />
+        )}
         {searchResult && searchResult !== 'loading' && searchResult !== 'notfound' && !searchResult.error && (
           <div style={{ marginTop: 10, padding: '12px', background: 'var(--s2)', borderRadius: 10, border: '1px solid var(--b1)', animation: 'fadeUp 0.25s ease both' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <Avatar username={searchResult.username} name={searchResult.name} size={32} />
+              <Avatar name={searchResult.name} size={32} />
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{searchResult.name}</div>
                 <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--dim)' }}>@{searchResult.username}</div>
@@ -168,7 +204,9 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
               <button onClick={() => { onSelectChat(searchResult.alreadyChat); setSearch(''); setSearchResult(null) }}
                 style={{ width: '100%', padding: '7px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'transform 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>Open chat</button>
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                Open chat
+              </button>
             ) : searchResult.sent ? (
               <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--dim)', textAlign: 'center', letterSpacing: 1, animation: 'fadeIn 0.3s ease' }}>request sent ✓</div>
             ) : (
@@ -178,7 +216,7 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
                   onFocus={e => e.target.style.borderColor = 'var(--b2)'}
                   onBlur={e => e.target.style.borderColor = 'var(--b1)'} />
                 <button onClick={sendRequest} disabled={sending}
-                  style={{ width: '100%', padding: '7px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: sending ? 0.5 : 1, transition: 'transform 0.15s' }}
+                  style={{ width: '100%', padding: '7px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: sending ? 0.5 : 1, transition: 'transform 0.15s, opacity 0.15s' }}
                   onMouseEnter={e => { if (!sending) e.currentTarget.style.transform = 'scale(1.02)' }}
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
                   {sending ? 'Sending...' : 'Send chat request'}
@@ -194,7 +232,15 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
       {/* Tabs */}
       <div style={{ display: 'flex', borderBottom: '1px solid var(--b1)' }}>
         {['chats', 'requests'].map(t => (
-          <div key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '10px', textAlign: 'center', cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: tab === t ? 'var(--text)' : 'var(--dim)', borderBottom: tab === t ? '2px solid var(--accent)' : '2px solid transparent', transition: 'color 0.2s, border-color 0.2s', position: 'relative' }}>
+          <div key={t} onClick={() => setTab(t)} style={{
+            flex: 1, padding: '10px', textAlign: 'center', cursor: 'pointer',
+            fontFamily: "'JetBrains Mono',monospace", fontSize: 9, fontWeight: 500,
+            letterSpacing: 2, textTransform: 'uppercase',
+            color: tab === t ? 'var(--text)' : 'var(--dim)',
+            borderBottom: tab === t ? '2px solid var(--accent)' : '2px solid transparent',
+            transition: 'color 0.2s, border-color 0.2s',
+            position: 'relative',
+          }}>
             {t}
             {t === 'requests' && requests.length > 0 && (
               <span className="badge-pulse" style={{ marginLeft: 6, background: '#e55', color: '#fff', borderRadius: 100, fontSize: 8, padding: '1px 5px', fontWeight: 700, display: 'inline-block' }}>{requests.length}</span>
@@ -207,24 +253,28 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {tab === 'chats' && (
           chats.length === 0
-            ? <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--dimmer)', letterSpacing: 1, lineHeight: 2, animation: 'fadeIn 0.4s ease 0.2s both' }}>NO CHATS YET<br/>SEARCH A USERNAME<br/>TO START</div>
-            : chats.map((c, i) => <ChatRow key={c.chatId} chat={c} active={c.chatId === activeChatId} index={i} onClick={() => { onSelectChat(c); if (isMobile) onClose() }} />)
+            ? <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--dimmer)', letterSpacing: 1, lineHeight: 2, animation: 'fadeIn 0.4s ease 0.2s both' }}>
+                NO CHATS YET<br/>SEARCH A USERNAME<br/>TO START
+              </div>
+            : chats.map((c, i) => (
+                <ChatRow key={c.chatId} chat={c} active={c.chatId === activeChatId} index={i}
+                  onClick={() => { onSelectChat(c); if (isMobile) onClose() }} />
+              ))
         )}
         {tab === 'requests' && (
           requests.length === 0
             ? <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: 'var(--dimmer)', letterSpacing: 1, animation: 'fadeIn 0.4s ease both' }}>NO PENDING REQUESTS</div>
-            : requests.map(r => <RequestRow key={r.from} req={r} myUsername={session.username} onAccept={acceptRequest} onDecline={declineRequest} />)
+            : requests.map(r => (
+                <RequestRow key={r.from} req={r} myUsername={session.username} onAccept={acceptRequest} onDecline={declineRequest} />
+              ))
         )}
       </div>
 
-      {/* Footer — click avatar to change pfp */}
+      {/* Footer */}
       <div style={{ padding: '12px 16px', borderTop: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Avatar
-          username={session.username}
-          name={session.myName}
-          size={34}
-          onClick={() => setShowPfpUploader(true)}
-        />
+        <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--s3)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', flexShrink: 0 }}>
+          {session.myName?.[0]}
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{session.myName}</div>
           <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--dim)', letterSpacing: 0.5 }}>@{session.username}</div>
@@ -232,18 +282,10 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
         <button onClick={onSignOut} title="Sign out"
           style={{ background: 'none', border: 'none', color: 'var(--dim)', cursor: 'pointer', fontSize: 16, padding: 4, borderRadius: 8, transition: 'color 0.15s, transform 0.2s' }}
           onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.transform = 'translateX(2px)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--dim)'; e.currentTarget.style.transform = 'translateX(0)' }}>↩</button>
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--dim)'; e.currentTarget.style.transform = 'translateX(0)' }}>
+          ↩
+        </button>
       </div>
-
-      {/* PFP Uploader modal */}
-      {showPfpUploader && (
-        <PfpUploader
-          username={session.username}
-          currentPfp={myPfp}
-          onClose={() => setShowPfpUploader(false)}
-          onUpdated={url => setMyPfp(url)}
-        />
-      )}
     </div>
   )
 }
