@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Avatar, UploadableAvatar } from './Avatar'
 import { ref, get, set, update } from 'firebase/database'
 import { db } from '../firebase'
 
@@ -272,9 +273,7 @@ export default function Sidebar({ session, chats, requests, activeChatId, onSele
 
       {/* Footer */}
       <div style={{ padding: '12px 16px', borderTop: '1px solid var(--b1)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--s3)', border: '1px solid var(--b1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', flexShrink: 0 }}>
-          {session.myName?.[0]}
-        </div>
+        <UploadableAvatar username={session.username} name={session.myName} size={32} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{session.myName}</div>
           <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: 'var(--dim)', letterSpacing: 0.5 }}>@{session.username}</div>
